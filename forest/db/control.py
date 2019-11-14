@@ -318,13 +318,39 @@ class Controls(object):
 
 
 @export
+class DatasetUI(Observable):
+    """User interface to select dataset(s)"""
+    def __init__(self):
+        self.dropdown = bokeh.models.Dropdown(
+                label="Model/observation",
+                width=350)
+        util.autolabel(self.dropdown)
+        self.dropdown.on_change("value", self.on_change("pattern"))
+        self.layout = bokeh.layouts.column(self.dropdown)
+        super().__init__()
+
+    def on_change(self, key):
+        def callback(attr, old, new):
+            self.notify(set_value(key, new))
+        return callback
+
+    def render(self, state):
+        """Configure dropdown menus"""
+        assert isinstance(state, dict), "Only support dict"
+        patterns = state.get("patterns", [])
+        self.dropdown.menu = patterns
+        self.dropdown.disabled = len(patterns) == 0
+        if ("pattern" in state) and ("patterns" in state):
+            for _, pattern in state["patterns"]:
+                if pattern == state["pattern"]:
+                    self.dropdown.value = pattern
+
+@export
 class ControlView(Observable):
     def __init__(self):
         dropdown_width = 180
         button_width = 75
         self.dropdowns = {
-            "pattern": bokeh.models.Dropdown(
-                label="Model/observation"),
             "variable": bokeh.models.Dropdown(
                 label="Variable"),
             "initial_time": bokeh.models.Dropdown(
@@ -364,7 +390,6 @@ class ControlView(Observable):
                 self.dropdowns[key],
                 self.buttons[key]["next"])
         self.layout = bokeh.layouts.column(
-            self.dropdowns["pattern"],
             self.dropdowns["variable"],
             self.rows["initial_time"],
             self.rows["valid_time"],
@@ -390,7 +415,6 @@ class ControlView(Observable):
         """Configure dropdown menus"""
         assert isinstance(state, dict), "Only support dict"
         for key, items_key in [
-                ("pattern", "patterns"),
                 ("variable", "variables"),
                 ("initial_time", "initial_times"),
                 ("valid_time", "valid_times"),
@@ -402,8 +426,6 @@ class ControlView(Observable):
                 disabled = len(values) == 0
                 if key == "pressure":
                     menu = [(self.hpa(p), str(p)) for p in values]
-                elif key == "pattern":
-                    menu = state["patterns"]
                 else:
                     menu = self.menu(values)
                 self.dropdowns[key].menu = menu
@@ -411,11 +433,6 @@ class ControlView(Observable):
             if key in self.buttons:
                 self.buttons[key]["next"].disabled = disabled
                 self.buttons[key]["previous"].disabled = disabled
-
-        if ("pattern" in state) and ("patterns" in state):
-            for _, pattern in state["patterns"]:
-                if pattern == state["pattern"]:
-                    self.dropdowns["pattern"].value = pattern
 
         for key in [
                 "variable",

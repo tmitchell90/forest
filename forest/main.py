@@ -279,9 +279,18 @@ def main(argv=None):
         db.reducer,
         initial_state=initial_state,
         middlewares=middlewares)
+
+    # User interface to select datasets
+    dataset_ui = db.DatasetUI()
+    dataset_ui.subscribe(store.dispatch)
+    store.subscribe(dataset_ui.render)
+
+    # User interface to select dimensions
     controls = db.ControlView()
     controls.subscribe(store.dispatch)
     store.subscribe(controls.render)
+
+    # Old-world State namedtuple stream
     old_states = (db.Stream()
                     .listen_to(store)
                     .map(lambda x: db.State(**x)))
@@ -295,6 +304,7 @@ def main(argv=None):
         bokeh.models.Panel(
             child=bokeh.layouts.column(
                 bokeh.models.Div(text="Navigate:"),
+                dataset_ui.layout,
                 controls.layout,
                 bokeh.models.Div(text="Compare:"),
                 bokeh.layouts.row(figure_drop),
