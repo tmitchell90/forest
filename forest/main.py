@@ -18,6 +18,7 @@ from forest import (
         db,
         keys,
         redux,
+        ui,
         unified_model,
         intake_loader,
         navigate,
@@ -281,7 +282,7 @@ def main(argv=None):
         middlewares=middlewares)
 
     # User interface to select datasets
-    dataset_ui = db.DatasetUI()
+    dataset_ui = ui.DatasetUI()
     dataset_ui.subscribe(store.dispatch)
     store.subscribe(dataset_ui.render)
 

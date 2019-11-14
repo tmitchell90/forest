@@ -318,34 +318,6 @@ class Controls(object):
 
 
 @export
-class DatasetUI(Observable):
-    """User interface to select dataset(s)"""
-    def __init__(self):
-        self.dropdown = bokeh.models.Dropdown(
-                label="Model/observation",
-                width=350)
-        util.autolabel(self.dropdown)
-        self.dropdown.on_change("value", self.on_change("pattern"))
-        self.layout = bokeh.layouts.column(self.dropdown)
-        super().__init__()
-
-    def on_change(self, key):
-        def callback(attr, old, new):
-            self.notify(set_value(key, new))
-        return callback
-
-    def render(self, state):
-        """Configure dropdown menus"""
-        assert isinstance(state, dict), "Only support dict"
-        patterns = state.get("patterns", [])
-        self.dropdown.menu = patterns
-        self.dropdown.disabled = len(patterns) == 0
-        if ("pattern" in state) and ("patterns" in state):
-            for _, pattern in state["patterns"]:
-                if pattern == state["pattern"]:
-                    self.dropdown.value = pattern
-
-@export
 class ControlView(Observable):
     def __init__(self):
         dropdown_width = 180
