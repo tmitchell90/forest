@@ -13,14 +13,12 @@ class DatasetUI(Observable):
                 label="Model/observation",
                 width=350)
         autolabel(self.dropdown)
-        self.dropdown.on_change("value", self.on_change("pattern"))
+        self.dropdown.on_change("value", self.callback)
         self.layout = bokeh.layouts.column(self.dropdown)
         super().__init__()
 
-    def on_change(self, key):
-        def callback(attr, old, new):
-            self.notify(set_value(key, new))
-        return callback
+    def callback(self, attr, old, new):
+        self.notify(set_value("label", new))
 
     def render(self, state):
         """Configure dropdown menus"""
