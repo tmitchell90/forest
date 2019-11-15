@@ -292,9 +292,15 @@ def main(argv=None):
     store.subscribe(controls.render)
 
     # Old-world State namedtuple stream
+    def old_world(new_world_state):
+        state = dict(new_world_state)
+        if "label" in state:
+            state.pop("label")
+        return db.State(**state)
+
     old_states = (db.Stream()
                     .listen_to(store)
-                    .map(lambda x: db.State(**x)))
+                    .map(old_world))
     old_states.subscribe(artist.on_state)
 
     # Ensure all listeners are pointing to the current state
